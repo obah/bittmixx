@@ -1,9 +1,13 @@
+use starknet::ContractAddress;
+
 #[starknet::interface]
 pub trait IYourContract<TContractState> {
     fn greeting(self: @TContractState) -> ByteArray;
     fn set_greeting(ref self: TContractState, new_greeting: ByteArray, amount_strk: Option<u256>);
     fn withdraw(ref self: TContractState);
     fn premium(self: @TContractState) -> bool;
+    fn transfer_strk(ref self: TContractState, amount_strk: u256, to: ContractAddress);
+    fn get_balance(self: @TContractState) -> (u256, u256);
 }
 
 #[starknet::contract]
@@ -32,6 +36,7 @@ pub mod YourContract {
         #[flat]
         OwnableEvent: OwnableComponent::Event,
         GreetingChanged: GreetingChanged,
+        StrkTransferred: StrkTransferred,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -42,6 +47,16 @@ pub mod YourContract {
         new_greeting: ByteArray,
         premium: bool,
         value: Option<u256>,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct StrkTransferred {
+        from: ContractAddress,
+        #[key]
+        to: ContractAddress,
+        amount: u256,
+        balance_before: u256,
+        balance_after: u256,
     }
 
     #[storage]
@@ -103,6 +118,7 @@ pub mod YourContract {
                     },
                 );
         }
+
         fn withdraw(ref self: ContractState) {
             self.ownable.assert_only_owner();
             let strk_contract_address = FELT_STRK_CONTRACT.try_into().unwrap();
@@ -110,8 +126,46 @@ pub mod YourContract {
             let balance = strk_dispatcher.balance_of(get_contract_address());
             strk_dispatcher.transfer(self.ownable.owner(), balance);
         }
+
         fn premium(self: @ContractState) -> bool {
             self.premium.read()
+        }
+
+        fn transfer_strk(ref self: ContractState, amount_strk: u256, to: ContractAddress) {
+            let strk_contract_address = FELT_STRK_CONTRACT.try_into().unwrap();
+
+            let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
+
+            // let caller_balance = strk_dispatcher.balance_of(get_caller_address());
+
+            // assert(caller_balance >= amount_strk, "Insufficient balance");
+
+            let balance_before = strk_dispatcher.balance_of(to);
+
+            strk_dispatcher.transfer(to, amount_strk);
+
+            let balance_after = strk_dispatcher.balance_of(to);
+            self
+                .emit(
+                    StrkTransferred {
+                        from: get_caller_address(),
+                        to: to,
+                        amount: amount_strk,
+                        balance_before: balance_before,
+                        balance_after: balance_after,
+                    },
+                );
+        }
+
+        fn get_balance(self: @ContractState) -> (u256, u256) {
+            let strk_contract_address = FELT_STRK_CONTRACT.try_into().unwrap();
+
+            let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
+
+            let caller_balance = strk_dispatcher.balance_of(get_caller_address());
+            let contract_balance = strk_dispatcher.balance_of(get_contract_address());
+
+            (caller_balance, contract_balance)
         }
     }
 }

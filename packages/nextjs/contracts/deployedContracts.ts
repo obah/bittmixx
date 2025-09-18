@@ -7,7 +7,7 @@ const deployedContracts = {
   devnet: {
     YourContract: {
       address:
-        "0x19d63a2d4fb619fe89b1d1046062ee9d5a2552f4848f1956cc5ad3db7f15730",
+        "0x649cd3a40794878b0cc8f90855a88371fbf0d61a9a9095495e07f800b4dab67",
       abi: [
         {
           type: "impl",
@@ -119,6 +119,33 @@ const deployedContracts = {
               outputs: [
                 {
                   type: "core::bool",
+                },
+              ],
+              state_mutability: "view",
+            },
+            {
+              type: "function",
+              name: "transfer_strk",
+              inputs: [
+                {
+                  name: "amount_strk",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "to",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "get_balance",
+              inputs: [],
+              outputs: [
+                {
+                  type: "(core::integer::u256, core::integer::u256)",
                 },
               ],
               state_mutability: "view",
@@ -256,6 +283,38 @@ const deployedContracts = {
         },
         {
           type: "event",
+          name: "contracts::your_contract::YourContract::StrkTransferred",
+          kind: "struct",
+          members: [
+            {
+              name: "from",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "data",
+            },
+            {
+              name: "to",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+            {
+              name: "amount",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "balance_before",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "balance_after",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
           name: "contracts::your_contract::YourContract::Event",
           kind: "enum",
           variants: [
@@ -269,11 +328,133 @@ const deployedContracts = {
               type: "contracts::your_contract::YourContract::GreetingChanged",
               kind: "nested",
             },
+            {
+              name: "StrkTransferred",
+              type: "contracts::your_contract::YourContract::StrkTransferred",
+              kind: "nested",
+            },
           ],
         },
       ],
       classHash:
-        "0x21e2aa81952de7b6851d5e76ea1f70283373407b22bfb4d32fafa4c5e2c8f1d",
+        "0x60a2ccdd380407e3d549b6f0a4b732d21093fc808174a0edb7fed1fae3d6ee2",
+    },
+    BittMixx: {
+      address:
+        "0x6b951c64c9d52e0debdeff866151a7573dcbf0f47ea449db744bbc1b5f05572",
+      abi: [
+        {
+          type: "impl",
+          name: "BittmixxImpl",
+          interface_name: "contracts::bittmixx::IBittMixx",
+        },
+        {
+          type: "struct",
+          name: "core::integer::u256",
+          members: [
+            {
+              name: "low",
+              type: "core::integer::u128",
+            },
+            {
+              name: "high",
+              type: "core::integer::u128",
+            },
+          ],
+        },
+        {
+          type: "interface",
+          name: "contracts::bittmixx::IBittMixx",
+          items: [
+            {
+              type: "function",
+              name: "deposit",
+              inputs: [
+                {
+                  name: "amount",
+                  type: "core::integer::u256",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+            {
+              type: "function",
+              name: "withdraw",
+              inputs: [
+                {
+                  name: "amount",
+                  type: "core::integer::u256",
+                },
+                {
+                  name: "recipient",
+                  type: "core::starknet::contract_address::ContractAddress",
+                },
+              ],
+              outputs: [],
+              state_mutability: "external",
+            },
+          ],
+        },
+        {
+          type: "constructor",
+          name: "constructor",
+          inputs: [],
+        },
+        {
+          type: "event",
+          name: "contracts::bittmixx::BittMixx::StrkDeposited",
+          kind: "struct",
+          members: [
+            {
+              name: "amount",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::bittmixx::BittMixx::StrkWithdrawn",
+          kind: "struct",
+          members: [
+            {
+              name: "amount",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "amount_left",
+              type: "core::integer::u256",
+              kind: "data",
+            },
+            {
+              name: "recipient",
+              type: "core::starknet::contract_address::ContractAddress",
+              kind: "key",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::bittmixx::BittMixx::Event",
+          kind: "enum",
+          variants: [
+            {
+              name: "StrkDeposited",
+              type: "contracts::bittmixx::BittMixx::StrkDeposited",
+              kind: "nested",
+            },
+            {
+              name: "StrkWithdrawn",
+              type: "contracts::bittmixx::BittMixx::StrkWithdrawn",
+              kind: "nested",
+            },
+          ],
+        },
+      ],
+      classHash:
+        "0x5cc5348bc79fea1b822a692ac2730981b869ab33ba5e904b20964cb90bbe0da",
     },
   },
 } as const;

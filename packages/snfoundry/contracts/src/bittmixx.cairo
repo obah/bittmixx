@@ -34,7 +34,7 @@ pub mod BittMixx {
     use core::poseidon::PoseidonTrait;
     use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{*, StoragePathEntry};
-    use starknet::{ContractAddress, get_caller_address, get_contract_address};
+    use starknet::{ContractAddress, get_block_timestamp, get_caller_address, get_contract_address};
     use super::IBittMixx;
     //account for the 3 tokens - btc, eth and strk
     //also include reentrancy from openzeppelin
@@ -57,6 +57,8 @@ pub mod BittMixx {
         amount: u256,
         #[key]
         commitment: felt252,
+        leaf_index: u32,
+        time: u64,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -86,9 +88,12 @@ pub mod BittMixx {
     impl BittmixxImpl of IBittMixx<ContractState> {
         fn deposit(ref self: ContractState, amount: u256, commitment: felt252) {
             let is_commitment_used = self.commitments.entry(commitment).read();
-            assert!(!is_commitment_used, "Commitment already used!");
 
+            assert!(!is_commitment_used, "Commitment already used!");
             assert!(amount >= MIN_STRK_DEPOSIT, "Deposit amount too low!");
+
+            let inserted_leaf_index = insert_leaf(ref self, commitment);
+            self.commitments.entry(commitment).write(true);
 
             let strk_contract_address = FELT_STRK_CONTRACT.try_into().unwrap();
             let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
@@ -98,7 +103,15 @@ pub mod BittMixx {
 
             strk_dispatcher.transfer_from(get_caller_address(), get_contract_address(), amount);
 
-            self.emit(StrkDeposited { amount, commitment });
+            self
+                .emit(
+                    StrkDeposited {
+                        amount,
+                        commitment,
+                        leaf_index: inserted_leaf_index,
+                        time: get_block_timestamp(),
+                    },
+                );
         }
 
         fn withdraw(ref self: ContractState, amount: u256, recipient: ContractAddress) {

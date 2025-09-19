@@ -5,12 +5,18 @@ version = 1
 name = "contracts"
 version = "0.2.0"
 dependencies = [
+ "garaga",
  "openzeppelin_access",
  "openzeppelin_testing",
  "openzeppelin_token",
  "openzeppelin_utils",
  "snforge_std",
 ]
+
+[[package]]
+name = "garaga"
+version = "0.18.1"
+source = "git+https://github.com/keep-starknet-strange/garaga.git?tag=v0.18.1#3adb570fbfb940611e1748341fd246ceb0755969"
 
 [[package]]
 name = "openzeppelin_access"

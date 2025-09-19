@@ -9,6 +9,11 @@ edition = "2024_07"
 starknet = ">=2.12.0"
 openzeppelin_access = ">=2.0.0"
 openzeppelin_token = ">=2.0.0"
+garaga = { git = "https://github.com/keep-starknet-strange/garaga.git", tag = "v0.18.1" }
+
+[cairo]
+sierra-replace-ids = false
+inlining-strategy = 2
 
 [dev-dependencies]
 openzeppelin_utils = ">=2.0.0"
@@ -17,6 +22,7 @@ snforge_std = ">=0.49.0"
 
 [[target.starknet-contract]]
 casm = true # taggle this to `false` to speed up compilation/script tests
+casm-add-pythonic-hints = true
 
 [tool.scarb]
 allow-prebuilt-plugins = [

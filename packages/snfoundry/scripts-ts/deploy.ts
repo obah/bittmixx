@@ -51,9 +51,16 @@ const deployScript = async (): Promise<void> => {
   //     owner: deployer.address,
   //   },
   // });
+  let { address: verifierAddress } = await deployContract({
+    contract: "UltraStarknetZKHonkVerifier",
+    constructorArgs: {},
+  });
+
   await deployContract({
     contract: "BittMixx",
-    constructorArgs: {},
+    constructorArgs: {
+      verifier_address: verifierAddress,
+    },
   });
 };
 

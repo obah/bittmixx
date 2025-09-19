@@ -14,16 +14,14 @@ use starknet::ContractAddress;
 #[starknet::interface]
 pub trait IBittMixx<TContractState> {
     fn deposit(ref self: TContractState, amount: u256, commitment: felt252);
-    fn withdraw(ref self: TContractState, amount: u256, recipient: ContractAddress);
-    // fn withdraw(
-//     ref self: TContractState,
-//     amount_to_withdraw: u256,
-//     amount_deposited: u256,
-//     nullifier_hash: felt252,
-//     recipient: ContractAddress,
-//     proof: Span<felt252>,
-//     roothash: felt252,
-// );
+    fn withdraw(
+        ref self: TContractState,
+        amount: u256,
+        nullifier_hash: felt252,
+        recipient: ContractAddress,
+        proof: Span<felt252>,
+        root_hash: felt252,
+    );
 }
 
 #[starknet::contract]
@@ -35,14 +33,19 @@ pub mod BittMixx {
     use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
     use starknet::storage::{*, StoragePathEntry};
     use starknet::{ContractAddress, get_block_timestamp, get_caller_address, get_contract_address};
+    use crate::honk_verifier::{
+        IUltraStarknetZKHonkVerifierDispatcher, IUltraStarknetZKHonkVerifierDispatcherTrait,
+    };
     use super::IBittMixx;
+
+
     //account for the 3 tokens - btc, eth and strk
     //also include reentrancy from openzeppelin
 
     const FELT_STRK_CONTRACT: felt252 =
         0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d;
     const ROOT_MAX_SIZE: u8 = 30;
-    const TREE_DEPTH: u32 = 32;
+    const TREE_DEPTH: u32 = 31;
     const MIN_STRK_DEPOSIT: u256 = 10000000000000000000; //10 STRK
 
     #[event]
@@ -74,13 +77,16 @@ pub mod BittMixx {
         // strk_balance: u256,
         next_leaf_index: u32,
         current_root_index: u32,
-        roots: Map<u256, felt252>,
+        verifier_address: ContractAddress,
         cached_subtrees: Map<u32, felt252>,
+        roots: Map<u256, felt252>,
         commitments: Map<felt252, bool>,
+        nullifier_hashes: Map<felt252, bool>,
     }
 
     #[constructor]
-    fn constructor(ref self: ContractState) {
+    fn constructor(ref self: ContractState, verifier_address: ContractAddress) {
+        self.verifier_address.write(verifier_address);
         self.roots.entry(0).write(get_zero_leaf(TREE_DEPTH));
     }
 
@@ -114,10 +120,36 @@ pub mod BittMixx {
                 );
         }
 
-        fn withdraw(ref self: ContractState, amount: u256, recipient: ContractAddress) {
+        fn withdraw(
+            ref self: ContractState,
+            amount: u256,
+            nullifier_hash: felt252,
+            recipient: ContractAddress,
+            proof: Span<felt252>,
+            root_hash: felt252,
+        ) {
+            assert!(!is_known_root(@self, root_hash), "Invalid root hash");
+
+            let mut public_inputs = array![];
+            public_inputs.append(root_hash);
+            public_inputs.append(nullifier_hash);
+            public_inputs.append(recipient.into());
+
+            let verifier_dispatcher = IUltraStarknetZKHonkVerifierDispatcher {
+                contract_address: self.verifier_address.read(),
+            };
+
+            assert!(
+                verifier_dispatcher.verify_ultra_starknet_zk_honk_proof(proof).is_some(),
+                "Invalid Proof",
+            );
+
+            assert!(!self.nullifier_hashes.entry(nullifier_hash).read(), "Nullifier Hash Used");
+
+            self.nullifier_hashes.entry(nullifier_hash).write(true);
+
             let strk_contract_address = FELT_STRK_CONTRACT.try_into().unwrap();
             let strk_dispatcher = IERC20Dispatcher { contract_address: strk_contract_address };
-
             strk_dispatcher.transfer(recipient, amount);
 
             self.emit(StrkWithdrawn { amount, amount_left: amount, recipient });
@@ -195,6 +227,29 @@ pub mod BittMixx {
             31 => 0x5dc143b94d93bfa68b3e23e92eb85f3128a65471753b51acf66e5387f2882d2,
             _ => panic!("Invalid tree depth!"),
         }
+    }
+
+    fn is_known_root(self: @ContractState, root: felt252) -> bool {
+        if root == 0 {
+            return false;
+        }
+
+        let current_index = self.current_root_index.read();
+        let mut i = current_index;
+
+        while i == current_index {
+            if root == self.roots.entry(i.into()).read() {
+                return true;
+            }
+
+            if i == 0 {
+                i = ROOT_MAX_SIZE.into();
+            }
+
+            i -= 1;
+        }
+
+        false
     }
 }
 

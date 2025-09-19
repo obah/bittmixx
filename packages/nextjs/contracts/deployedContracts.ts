@@ -5,9 +5,99 @@
 
 const deployedContracts = {
   devnet: {
+    UltraStarknetZKHonkVerifier: {
+      address:
+        "0xf5fae7cdb76ac28b83b87ab05ff4debe3682b73751c7b681ab175fe399e161",
+      abi: [
+        {
+          type: "impl",
+          name: "IUltraStarknetZKHonkVerifier",
+          interface_name:
+            "contracts::honk_verifier::IUltraStarknetZKHonkVerifier",
+        },
+        {
+          type: "struct",
+          name: "core::array::Span::<core::felt252>",
+          members: [
+            {
+              name: "snapshot",
+              type: "@core::array::Array::<core::felt252>",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "core::integer::u256",
+          members: [
+            {
+              name: "low",
+              type: "core::integer::u128",
+            },
+            {
+              name: "high",
+              type: "core::integer::u128",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "core::array::Span::<core::integer::u256>",
+          members: [
+            {
+              name: "snapshot",
+              type: "@core::array::Array::<core::integer::u256>",
+            },
+          ],
+        },
+        {
+          type: "enum",
+          name: "core::option::Option::<core::array::Span::<core::integer::u256>>",
+          variants: [
+            {
+              name: "Some",
+              type: "core::array::Span::<core::integer::u256>",
+            },
+            {
+              name: "None",
+              type: "()",
+            },
+          ],
+        },
+        {
+          type: "interface",
+          name: "contracts::honk_verifier::IUltraStarknetZKHonkVerifier",
+          items: [
+            {
+              type: "function",
+              name: "verify_ultra_starknet_zk_honk_proof",
+              inputs: [
+                {
+                  name: "full_proof_with_hints",
+                  type: "core::array::Span::<core::felt252>",
+                },
+              ],
+              outputs: [
+                {
+                  type: "core::option::Option::<core::array::Span::<core::integer::u256>>",
+                },
+              ],
+              state_mutability: "view",
+            },
+          ],
+        },
+        {
+          type: "event",
+          name: "contracts::honk_verifier::UltraStarknetZKHonkVerifier::Event",
+          kind: "enum",
+          variants: [],
+        },
+      ],
+      classHash:
+        "0xd259678c52b351856d2209876d6ff899ada388cc72ff2e54e7bafd807edd2d",
+    },
     BittMixx: {
       address:
-        "0xfc0c6962d6a7c0143212e07b566030107844ac8189e74a62f46cc15314fed2",
+        "0x6aac6f3f70ae7a6a04a5a78088df354489014e4bbb87be5e1308e3eeb63ef32",
       abi: [
         {
           type: "impl",
@@ -25,6 +115,16 @@ const deployedContracts = {
             {
               name: "high",
               type: "core::integer::u128",
+            },
+          ],
+        },
+        {
+          type: "struct",
+          name: "core::array::Span::<core::felt252>",
+          members: [
+            {
+              name: "snapshot",
+              type: "@core::array::Array::<core::felt252>",
             },
           ],
         },
@@ -57,28 +157,34 @@ const deployedContracts = {
                   type: "core::integer::u256",
                 },
                 {
+                  name: "nullifier_hash",
+                  type: "core::felt252",
+                },
+                {
                   name: "recipient",
                   type: "core::starknet::contract_address::ContractAddress",
+                },
+                {
+                  name: "proof",
+                  type: "core::array::Span::<core::felt252>",
+                },
+                {
+                  name: "root_hash",
+                  type: "core::felt252",
                 },
               ],
               outputs: [],
               state_mutability: "external",
             },
+          ],
+        },
+        {
+          type: "constructor",
+          name: "constructor",
+          inputs: [
             {
-              type: "function",
-              name: "hasher",
-              inputs: [
-                {
-                  name: "value",
-                  type: "core::felt252",
-                },
-              ],
-              outputs: [
-                {
-                  type: "core::felt252",
-                },
-              ],
-              state_mutability: "view",
+              name: "verifier_address",
+              type: "core::starknet::contract_address::ContractAddress",
             },
           ],
         },
@@ -96,6 +202,16 @@ const deployedContracts = {
               name: "commitment",
               type: "core::felt252",
               kind: "key",
+            },
+            {
+              name: "leaf_index",
+              type: "core::integer::u32",
+              kind: "data",
+            },
+            {
+              name: "time",
+              type: "core::integer::u64",
+              kind: "data",
             },
           ],
         },
@@ -140,7 +256,7 @@ const deployedContracts = {
         },
       ],
       classHash:
-        "0x5129fb52cce7b5aad3e8fdf0efaab50732cc02b3417e4dcfaa7af0396204a73",
+        "0x2ed23472b1f7104e5a5df9edd5139b5a3b8fe594418cbfd7dc8d98bc696918",
     },
   },
 } as const;

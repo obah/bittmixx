@@ -30,6 +30,8 @@
     "verify": "yarn workspace @ss-2/snfoundry verify"
   },
   "dependencies": {
+    "@vercel/functions": "^3.1.2",
+    "mongodb": "^6.20.0",
     "postcss": "^8.4.38"
   },
   "devDependencies": {

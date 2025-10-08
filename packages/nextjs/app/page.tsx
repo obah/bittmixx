@@ -1,8 +1,29 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { ConnectedAddress } from "~~/components/ConnectedAddress";
+import { generateNote } from "~~/utils/circuit/generate-note";
+import { getMerkleRoot } from "~~/utils/circuit/merkle-functions";
+import { useEffect } from "react";
 
 const Home = () => {
+  useEffect(() => {
+    const getMerkleRootHash = async () => {
+      const root = await getMerkleRoot();
+      console.log(root);
+    };
+
+    getMerkleRootHash();
+  }, []);
+
+  const { nullifier, secret, commitment, note } = generateNote("gold", 1000);
+
+  console.log("nullifier", nullifier);
+  console.log("secret", secret);
+  console.log("commitment", commitment);
+  console.log("note", note);
+
   return (
     <div className="flex items-center flex-col grow pt-10">
       <div className="px-5">

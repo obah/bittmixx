@@ -8,8 +8,8 @@ fn main(
     recipient_address: pub Field,
     nullifier: Field,
     secret: Field,
-    merkle_proof: [Field; 20],
-    is_even: [bool; 20],
+    merkle_proof: [Field; 32],
+    is_even: [bool; 32],
     amount: Field,
 ) {
     let commitment: Field = hash([nullifier, secret, amount], 3);

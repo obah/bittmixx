@@ -8666,6 +8666,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"garaga@npm:^0.18.2":
+  version: 0.18.2
+  resolution: "garaga@npm:0.18.2"
+  checksum: 583211febd0048047f33d1d399f64f0950dc87e450cdb815f59b14f93825449d59a90d0f3ff7f68752eb9db740fbc3bde672fe61ca8bc877d197d4bba8c315aa
+  languageName: node
+  linkType: hard
+
 "gauge@npm:^3.0.0":
   version: 3.0.2
   resolution: "gauge@npm:3.0.2"
@@ -12757,6 +12764,7 @@ __metadata:
   dependencies:
     "@vercel/functions": ^3.1.2
     daisyui: ^4.7.3
+    garaga: ^0.18.2
     husky: ^9.0.11
     mongodb: ^6.20.0
     pinst: ^3.0.0

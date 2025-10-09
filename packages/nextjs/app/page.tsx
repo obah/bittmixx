@@ -4,25 +4,49 @@ import Link from "next/link";
 import Image from "next/image";
 import { ConnectedAddress } from "~~/components/ConnectedAddress";
 import { generateNote } from "~~/utils/circuit/generate-note";
-import { getMerkleRoot } from "~~/utils/circuit/merkle-functions";
+import {
+  getMerkleRoot,
+  appendNewLeaf,
+  getMerkleProof,
+} from "~~/utils/circuit/merkle-functions";
 import { useEffect } from "react";
 
 const Home = () => {
   useEffect(() => {
-    const getMerkleRootHash = async () => {
-      const root = await getMerkleRoot();
-      console.log(root);
+    const processNote = async () => {
+      const { nullifier, nullifierHash, secret, commitment } = generateNote(
+        "gold",
+        1000
+      );
+
+      console.log("nullifier", nullifier);
+      console.log("nullifierHash", nullifierHash);
+      console.log("secret", secret);
+      console.log("commitment", commitment);
+
+      // Append the commitment to the merkle tree
+      const commitmentHex = "0x" + commitment.toString(16);
+      const leafIndex = await appendNewLeaf(commitmentHex);
+
+      if (leafIndex !== null) {
+        console.log("Appended leaf at index:", leafIndex);
+
+        // Get the merkle proof for the newly appended leaf
+        const proofData = await getMerkleProof(leafIndex);
+
+        // Get the root after commitment was appended
+        const root = await getMerkleRoot();
+
+        if (proofData && root) {
+          console.log("Root (after commitment appended):", root);
+          console.log("isEvenSides:", proofData.isEvenSides);
+          console.log("Proof:", proofData.proof);
+        }
+      }
     };
 
-    getMerkleRootHash();
+    processNote();
   }, []);
-
-  const { nullifier, secret, commitment, note } = generateNote("gold", 1000);
-
-  console.log("nullifier", nullifier);
-  console.log("secret", secret);
-  console.log("commitment", commitment);
-  console.log("note", note);
 
   return (
     <div className="flex items-center flex-col grow pt-10">

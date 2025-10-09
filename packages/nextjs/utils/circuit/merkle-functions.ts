@@ -11,14 +11,14 @@ export const appendNewLeaf = async (hash: string) => {
     const data = await response.json();
 
     if (response.ok) {
-      console.log("Successfully appended leaf!");
-      console.log("Leaf Index:", data.leafIndex);
-      console.log("New Merkle Root:", data.newRoot);
+      return data.leafIndex;
     } else {
       console.error("Failed to append leaf:", data.error);
+      return null;
     }
   } catch (error) {
     console.error("An error occurred:", error);
+    return null;
   }
 };
 
@@ -29,5 +29,33 @@ export const getMerkleRoot = async () => {
     return data.rootHash;
   } catch (error) {
     console.error("An error occurred:", error);
+    return null;
+  }
+};
+
+export const getMerkleProof = async (leafIndex: string | number | bigint) => {
+  try {
+    const response = await fetch("/api/merkle/proof", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ leafIndex: leafIndex.toString() }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      return {
+        proof: data.siblings,
+        isEvenSides: data.isEvenSides,
+      };
+    } else {
+      console.error("Failed to generate proof:", data.error);
+      return null;
+    }
+  } catch (error) {
+    console.error("An error occurred:", error);
+    return null;
   }
 };
